@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>Homepage</title>
+  </head>
+
+  <body>
+    {% if session.user_id %}
+    <h1>Welcome {{ session.username }}</h1>
+
+    <nav>
+      <a href="/logout" method="post"><button>Sign out</button> </a>
+    </nav>
+
+    <h2>New Recipy</h2>
+
+    <form action="/new_recipy" method="post">
+      <p>
+        <label for="content"> Recipy name: </label> <br />
+        <input type="text" name="title" maxlength="50" required />
+      </p>
+
+      <p>
+        <label for="content"> Recipy: </label> <br />
+        <textarea name="recipy" rows="5" cols="40" maxlength="500"></textarea>
+      </p>
+
+      <p>
+        <label for="content"> Cuisine: </label> <br />
+        <input type="text" name="cuisine" maxlength="50" required />
+      </p>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+      <input type="submit" value="Send" />
+    </form>
+
+    <ul>
+      {% for recipy in recipes %}
+      <li>
+        <a href="/recipy/{{ recipy.id }}"> {{ recipy.title | safe }} </a> <br />
+
+        {{ recipy.total }} comments on recipy. Newest {{ recipy.last }}
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% else %}
+    <h1>Welcome guest user!</h1>
+    <a href="/register"><button>Register a user</button> </a>
+    <form action="/login" method="post">
+      <p>
+        Username: <br />
+        <input type="text" name="username" />
+      </p>
+      <p>
+        Password: <br />
+        <input type="password" name="password" />
+      </p>
+      <input type="submit" value="Sign in" />
+    </form>
+
+    {% endif %}
+  </body>
+</html>

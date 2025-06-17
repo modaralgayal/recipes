@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>{{ recipy.title }}</title>
+  </head>
+
+  <body>
+    <h1>{{ recipy.title }}</h1>
+
+    <hr />
+    {% for comment in comments %}
+    <p id="{{ comment.id }}">
+      <a href="/user/{{ message.user_id }}"> {{ message.username }} </a>
+      ({{ message.sent_at }})
+    </p>
+    <p>{{ comment.content | show_lines }}</p>
+    {% if comment.user_id == session.user_id %}
+    <p>
+      <a href="/edit/{{ comment.id }}">Edit</a> |
+      <a href="/remove/{{ comment.id }}">Delete</a>
+    </p>
+    {% endif %} {% endfor %}
+
+    {% if session.user_id %}
+    <h2> New Message </h2>
+
+
+  </body>
+</html>
