@@ -5,12 +5,13 @@
 
   <body>
     <h1>{{ recipy.title }}</h1>
+    <p>{{ recipy.recipy }}</p>
 
     <hr />
     {% for comment in comments %}
     <p id="{{ comment.id }}">
-      <a href="/user/{{ message.user_id }}"> {{ message.username }} </a>
-      ({{ message.sent_at }})
+      <a href="/user/{{ comment.user_id }}"> {{ comment.username }} </a>
+      ({{ comment.sent_at }})
     </p>
     <p>{{ comment.content | show_lines }}</p>
     {% if comment.user_id == session.user_id %}
@@ -18,11 +19,20 @@
       <a href="/edit/{{ comment.id }}">Edit</a> |
       <a href="/remove/{{ comment.id }}">Delete</a>
     </p>
-    {% endif %} {% endfor %}
+    {% endif %} {% endfor %} {% if session.user_id %}
+    <h2>New Comment</h2>
 
-    {% if session.user_id %}
-    <h2> New Message </h2>
+    <form action="/new_comment" method="post">
+      <p>
+        Comment:<br />
+        <textarea name="content" rows="5" cols="40"></textarea>
+      </p>
+      <input type="hidden" name="recipy_id" value="{{ recipy.id }}" />
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+      <input type="submit" value="Send" />
+    </form>
+    <hr />
 
-
+    {% endif %}
   </body>
 </html>

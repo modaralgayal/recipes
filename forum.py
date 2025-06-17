@@ -38,7 +38,7 @@ def get_recipy(recipy_id):
 
 
 def add_comment(content, user_id, recipy_id):
-    sql = """INSERT INTO comments (recipy, sent_at, user_id, recipy_id)
+    sql = """INSERT INTO comments (content, sent_at, user_id, recipy_id)
              VALUES (?, datetime('now'), ?, ?)"""
     db.execute(sql, [content, user_id, recipy_id])
 

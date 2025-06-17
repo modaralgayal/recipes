@@ -116,7 +116,7 @@ def create_user():
 
 
 @app.route("/new_recipy", methods=["POST"])
-def new_thread():
+def new_recipy():
     require_login()
     check_csrf()
 
@@ -141,6 +141,23 @@ def show_recipy(recipy_id):
 @app.route("/register")
 def register():
     return render_template("register.html", filled="")
+
+
+@app.route("/new_comment", methods=["POST"])
+def new_comment():
+    require_login()
+    check_csrf()
+
+    content = request.form["content"]
+    user_id = session["user_id"]
+    recipy_id = request.form["recipy_id"]
+
+    try:
+        forum.add_comment(content, user_id, recipy_id)
+    except sqlite3.IntegrityError:
+        abort(403)
+
+    return redirect("/recipy/" + str(recipy_id))
 
 
 @app.route("/logout")
