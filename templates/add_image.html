@@ -1,20 +1,14 @@
-<html>
-  <head>
-    <title>Add Image</title>
-  </head>
+{% extends "base.html" %}
 
-  <p>Please add an image that is 100 kt max.</p>
+{% block title %}Add Image{% endblock %}
 
-  {% for message in get_flashed_messages() %}
-  <p>
-    <b>{{ message }}</b>
-  </p>
-  {% endfor %}
+{% block content %}
+    <p>Please add an image that is 100 kt max.</p>
 
-  <form action="/add_image" method="post" enctype="multipart/form-data">
-    <p>Image: <input type="file" name="image" accept=".jpg" /></p>
+    <form action="/add_image" method="post" enctype="multipart/form-data">
+      <p>Image: <input type="file" name="image" accept=".jpg" /></p>
 
-    <input type="submit" value="Lähetä" />
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-  </form>
-</html>
+      <input type="submit" value="Lähetä" />
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+    </form>
+{% endblock %}

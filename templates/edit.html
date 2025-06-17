@@ -1,9 +1,8 @@
-<html>
-  <head>
-    <title>Edit</title>
-  </head>
+{% extends "base.html" %}
 
-  <body>
+{% block title %}Edit{% endblock %}
+
+{% block content %}
     <form action="/edit/{{ comment.id }}" method="post">
       <p>
         <label for="content">Comment:</label> <br />
@@ -19,5 +18,4 @@
       </p>
       <input type="submit" value="Send" />
     </form>
-  </body>
-</html>
+{% endblock %}

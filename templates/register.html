@@ -1,15 +1,8 @@
-<html>
-  <head>
-    <title>Registration</title>
-  </head>
+{% extends "base.html" %}
 
-  {% for message in get_flashed_messages() %}
-  <p>
-    <b>{{ message }}</b>
-  </p>
-  {% endfor %}
+{% block title %}Registration{% endblock %}
 
-  <body>
+{% block content %}
     <form action="/create_user" method="post">
       <p>
         Username: <br />
@@ -28,5 +21,4 @@
 
       <input type="submit" value="Create User" />
     </form>
-  </body>
-</html>
+{% endblock %}

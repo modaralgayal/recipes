@@ -1,9 +1,8 @@
-<html>
-  <head>
-    <title>Remove</title>
-  </head>
+{% extends "base.html" %}
 
-  <body>
+{% block title %}Remove{% endblock %}
+
+{% block content %}
     {% if type == "comment" %}
 
     <form action="/remove/{{ item.id }}" method="post">
@@ -22,5 +21,4 @@
       <input type="submit" name="cancel" value="Go back" />
     </form>
     {% endif %}
-  </body>
-</html>
+{% endblock %}

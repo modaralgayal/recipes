@@ -1,17 +1,12 @@
-<html>
-  <head>
-    <title>Homepage</title>
-  </head>
+{% extends "base.html" %}
 
-  <body>
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
     {% if session.user_id %}
     <h1>
       Welcome <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
     </h1>
-
-    <nav>
-      <a href="/logout" method="post"><button>Sign out</button> </a>
-    </nav>
 
     <h2>New Recipy</h2>
 
@@ -62,5 +57,4 @@
     </form>
 
     {% endif %}
-  </body>
-</html>
+{% endblock %}

@@ -1,9 +1,8 @@
-<html>
-  <head>
-    <title>{{ recipy.title }}</title>
-  </head>
+{% extends "base.html" %}
 
-  <body>
+{% block title %}{{ recipy.title }}{% endblock %}
+
+{% block content %}
     <h1>{{ recipy.title }}</h1>
     <p>{{ recipy.recipy }}</p>
 
@@ -34,5 +33,4 @@
     <hr />
 
     {% endif %}
-  </body>
-</html>
+{% endblock %}

@@ -1,13 +1,11 @@
-<html>
-  <head>
-    <title>User {{ user.username }}</title>
-  </head>
+{% extends "base.html" %}
 
-  <body>
+{% block title %}User {{ user.username }}{% endblock %}
+
+{% block content %}
     <h1>Hello {{ user.username | safe }}</h1>
 
     <nav>
-      <a href="/"><button>Home</button></a>
       <a href="/add_image"><button>Add Image</button></a>
     </nav>
 
@@ -36,5 +34,4 @@
       {% endfor %}
     </ul>
     {% endif %}
-  </body>
-</html>
+{% endblock %}
