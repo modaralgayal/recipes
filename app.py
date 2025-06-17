@@ -20,6 +20,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import config
 import db
 import forum
+import users
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
@@ -31,7 +32,6 @@ def require_login():
 
 
 def check_csrf():
-    print("This is the request form csrf token: ", request.form["csrf_token"])
     if request.form["csrf_token"] != session["csrf_token"]:
         abort(403)
 
@@ -84,24 +84,24 @@ def edit_comment(comment_id):
 
 
 @app.route("/remove_recipy/<int:recipy_id>", methods=["GET", "POST"])
-def remove_thread(recipy_id):
+def remove_recipy(recipy_id):
     require_login()
-    check_csrf()
 
-    item = forum.get_thread(recipy_id)
+    item = forum.get_recipy(recipy_id)
     type = "recipy"
 
     if request.method == "GET":
         return render_template("remove.html", item=item, type=type)
 
     if request.method == "POST":
+        check_csrf()
         if "cancel" in request.form:
             return redirect("/")
         if "continue" in request.form:
             success = forum.remove_recipy(recipy_id)
             if not success:
-                print("Cannot delete thread — likely has comments")
-                return "Cannot delete thread — likely has comments", 400
+                print("Cannot delete recipy — likely has comments")
+                return "Cannot delete recipy — likely has comments", 400
         return redirect("/")
 
 
@@ -200,6 +200,54 @@ def show_recipy(recipy_id):
     return render_template("recipy.html", recipy=recipy, comments=comments)
 
 
+@app.route("/add_image", methods=["GET", "POST"])
+def add_image():
+    require_login()
+
+    if request.method == "GET":
+        return render_template("add_image.html")
+
+    if request.method == "POST":
+        check_csrf()
+
+        file = request.files["image"]
+        if not file.filename.endswith(".jpg"):
+            flash("ERROR: The document is not a jpg-file.")
+            return redirect("/")
+
+        image = file.read()
+        if len(image) > 100 * 1024:
+            flash("ERROR: Image is too large.")
+            return redirect("/")
+
+        user_id = session["user_id"]
+        users.update_image(user_id, image)
+        flash("Image added successfully!")
+        return redirect("/user/" + str(user_id))
+
+@app.route("/image/<int:user_id>")
+def show_image(user_id):
+    require_login()
+    image = users.get_image(user_id)
+    if not image:
+        abort(404)
+
+    response = make_response(bytes(image))
+    response.headers.set("Content-Type", "image/jpeg")
+    return response
+
+
+
+@app.route("/user/<int:user_id>")
+def show_user(user_id):
+    require_login()
+    user = users.get_user(user_id)
+    if not user:
+        abort(404)
+    comments = users.get_comments(user_id)
+    return render_template("user.html", user=user, comments=comments)
+
+
 @app.route("/register")
 def register():
     return render_template("register.html", filled="")
@@ -208,7 +256,6 @@ def register():
 @app.route("/new_comment", methods=["POST"])
 def new_comment():
     require_login()
-    print("This is the session token: ", session["csrf_token"])
     check_csrf()
 
     content = request.form["content"]

@@ -5,7 +5,9 @@
 
   <body>
     {% if session.user_id %}
-    <h1>Welcome {{ session.username }}</h1>
+    <h1>
+      Welcome <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
+    </h1>
 
     <nav>
       <a href="/logout" method="post"><button>Sign out</button> </a>
@@ -39,6 +41,8 @@
 
         {{ recipy.total }} comments on recipy. Newest {{ recipy.last }}
       </li>
+      <a href="/remove_recipy/{{ recipy.id }}">Delete</a>
+
       {% endfor %}
     </ul>
 

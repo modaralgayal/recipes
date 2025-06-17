@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>User {{ user.username }}</title>
+  </head>
+
+  <body>
+    <h1>Hello {{ user.username | safe }}</h1>
+
+    <nav>
+      <a href="/"><button>Home</button></a>
+      <a href="/add_image"><button>Add Image</button></a>
+    </nav>
+
+    {% if user.has_image %}
+    <img
+      src="/image/{{ user.id }}"
+      alt="{{ user.username | safe }}'s' Profile picture"
+    />
+    {% endif %}
+
+    <p>User has sent {{ comments | count }} comments</p>
+
+    {% if comments %}
+    <p>First comment sent at {{ comments[-1].sent_at }}</p>
+    <p>Last comment sent at {{ comments[0].sent_at }}</p>
+
+    <ul>
+      {% for comment in comments %}
+      <li>
+        <a href="/recipy/{{ comment.recipy_id }}#{{ comment.id }}">
+          {{ comment.recipy_title | safe }}
+        </a>
+        <br />
+        ({{ comment.sent_at }})
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </body>
+</html>
