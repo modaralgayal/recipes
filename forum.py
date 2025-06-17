@@ -61,6 +61,27 @@ def get_comment(comment_id):
         return None
 
 
+def update_comment(comment_id, content):
+    sql = "UPDATE comments SET content = ? WHERE id = ?"
+    db.execute(sql, [content, comment_id])
+
+
+def remove_comment(comment_id):
+    sql = "DELETE FROM comments WHERE id = ?"
+    db.execute(sql, [comment_id])
+
+
+def remove_recipy(recipy_id):
+    try:
+        print("Deleting recipy:", recipy_id)
+        sql = "DELETE FROM recipes WHERE id = ?"
+        db.execute(sql, [int(recipy_id)])
+        return True
+    except sqlite3.IntegrityError as e:
+        print("Delete failed due to FK constraint:", e)
+        return False
+
+
 def update_comments(comment_id, content):
     sql = "UPDATE comments SET content = ? WHERE id = ?"
     db.execute(sql, [content, comment_id])

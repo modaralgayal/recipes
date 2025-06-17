@@ -31,6 +31,7 @@ def require_login():
 
 
 def check_csrf():
+    print("This is the request form csrf token: ", request.form["csrf_token"])
     if request.form["csrf_token"] != session["csrf_token"]:
         abort(403)
 
@@ -60,6 +61,67 @@ def show_lines(content):
     content = str(markupsafe.escape(content))
     content = content.replace("\n", "<br />")
     return markupsafe.Markup(content)
+
+
+@app.route("/edit/<int:comment_id>", methods=["GET", "POST"])
+def edit_comment(comment_id):
+    require_login()
+
+    comment = forum.get_comment(comment_id)
+    print(comment["id"])
+    print(comment["user_id"])
+    print(session["user_id"])
+    if comment["user_id"] != session["user_id"]:
+        abort(403)
+    if request.method == "GET":
+        return render_template("edit.html", comment=comment)
+
+    if request.method == "POST":
+        check_csrf()
+        content = request.form["content"]
+        forum.update_comment(comment["id"], content)
+        return redirect("/recipy/" + str(comment["recipy_id"]))
+
+
+@app.route("/remove_recipy/<int:recipy_id>", methods=["GET", "POST"])
+def remove_thread(recipy_id):
+    require_login()
+    check_csrf()
+
+    item = forum.get_thread(recipy_id)
+    type = "recipy"
+
+    if request.method == "GET":
+        return render_template("remove.html", item=item, type=type)
+
+    if request.method == "POST":
+        if "cancel" in request.form:
+            return redirect("/")
+        if "continue" in request.form:
+            success = forum.remove_recipy(recipy_id)
+            if not success:
+                print("Cannot delete thread — likely has comments")
+                return "Cannot delete thread — likely has comments", 400
+        return redirect("/")
+
+
+@app.route("/remove/<int:comment_id>", methods=["GET", "POST"])
+def remove_comment(comment_id):
+    require_login()
+
+    item = forum.get_comment(comment_id)
+    if not item:
+        abort(404)
+    type = "comment"
+
+    if request.method == "GET":
+        return render_template("remove.html", item=item, type=type)
+
+    if request.method == "POST":
+        check_csrf()
+        if "continue" in request.form:
+            forum.remove_comment(item["id"])
+        return redirect("/recipy/" + str(item["recipy_id"]))
 
 
 @app.route("/login", methods=["POST"])
@@ -146,6 +208,7 @@ def register():
 @app.route("/new_comment", methods=["POST"])
 def new_comment():
     require_login()
+    print("This is the session token: ", session["csrf_token"])
     check_csrf()
 
     content = request.form["content"]

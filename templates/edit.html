@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>Edit</title>
+  </head>
+
+  <body>
+    <form action="/edit/{{ comment.id }}" method="post">
+      <p>
+        <label for="content">Comment:</label> <br />
+        <textarea name="content" rows="5" cols="40">
+        {{ comment.content | safe }}</textarea
+        >
+        <input
+          type="hidden"
+          name="csrf_token"
+          value="{{ session.csrf_token }}"
+        />
+      </p>
+      <input type="submit" value="Send" />
+    </form>
+  </body>
+</html>
