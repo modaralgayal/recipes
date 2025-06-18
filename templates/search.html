@@ -10,6 +10,7 @@
             <label for="search_term">Search term:</label><br />
             <input type="text" name="search_term" value="{{ search_term }}" maxlength="100" required />
         </p>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
         <input type="submit" value="Search" />
     </form>
 

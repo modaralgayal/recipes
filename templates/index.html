@@ -12,6 +12,7 @@
     <form action="/search" method="post">
         <p>
             <input type="text" name="search_term" placeholder="Search recipes..." maxlength="100" />
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
             <input type="submit" value="Search" />
         </p>
     </form>
@@ -54,7 +55,9 @@
         {% endif %}
         {{ recipy.total }} comments on recipy. Newest {{ recipy.last }}
       </li>
+      {% if session.user_id == recipy.user_id %}
       <a href="/remove_recipy/{{ recipy.id }}">Delete</a>
+      {% endif %}
 
       {% endfor %}
     </ul>
@@ -71,6 +74,7 @@
         Password: <br />
         <input type="password" name="password" />
       </p>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       <input type="submit" value="Sign in" />
     </form>
 

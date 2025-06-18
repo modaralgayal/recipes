@@ -4,7 +4,7 @@ import db
 
 
 def get_recipes(page, page_size):
-    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, COUNT(c.id) total, MAX(c.sent_at) last, AVG(c.rating) avg_rating
+    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, r.user_id, COUNT(c.id) total, MAX(c.sent_at) last, AVG(c.rating) avg_rating
              FROM recipes r
              LEFT JOIN comments c ON r.id = c.recipy_id
              GROUP BY r.id

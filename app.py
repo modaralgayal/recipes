@@ -39,6 +39,10 @@ def check_csrf():
 @app.route("/")
 @app.route("/<int:page>")
 def index(page=1):
+    # Generate CSRF token for guest users if not present
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+        
     page_size = 10
     thread_count = forum.recipy_count()
     page_count = math.ceil(thread_count / page_size)
@@ -132,6 +136,7 @@ def remove_comment(comment_id):
 
 @app.route("/login", methods=["POST"])
 def login():
+    check_csrf()
     username = request.form["username"]
     password = request.form["password"]
 
@@ -162,6 +167,7 @@ def create_user():
         return render_template("register.html", filled="")
 
     if request.method == "POST":
+        check_csrf()
 
         username = request.form["username"]
         password1 = request.form["password1"]
@@ -257,6 +263,9 @@ def show_user(user_id):
 
 @app.route("/register")
 def register():
+    # Generate CSRF token for guest users if not present
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
     return render_template("register.html", filled="")
 
 
@@ -296,6 +305,7 @@ def search():
         return render_template("search.html", recipes=None, search_term="")
     
     if request.method == "POST":
+        check_csrf()
         search_term = request.form.get("search_term", "").strip()
         if not search_term:
             return render_template("search.html", recipes=None, search_term="")
