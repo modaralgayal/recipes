@@ -87,6 +87,14 @@ def update_comments(comment_id, content):
     db.execute(sql, [content, comment_id])
 
 
-def remove_comment(comment_id):
-    sql = "DELETE FROM comments WHERE id = ?"
-    db.execute(sql, [comment_id])
+def search_recipes(search_term):
+    """Search recipes by title, content, or cuisine"""
+    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, COUNT(c.id) total, MAX(c.sent_at) last
+             FROM recipes r
+             LEFT JOIN comments c ON r.id = c.recipy_id
+             WHERE r.title LIKE ? OR r.recipy LIKE ? OR r.cuisine LIKE ?
+             GROUP BY r.id
+             ORDER BY r.id DESC"""
+    search_pattern = f"%{search_term}%"
+    result = db.query(sql, [search_pattern, search_pattern, search_pattern])
+    return result

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Search Recipes{% endblock %}
+
+{% block content %}
+    <h1>Search Recipes</h1>
+    
+    <form action="/search" method="post">
+        <p>
+            <label for="search_term">Search term:</label><br />
+            <input type="text" name="search_term" value="{{ search_term }}" maxlength="100" required />
+        </p>
+        <input type="submit" value="Search" />
+    </form>
+
+    {% if search_term %}
+        <h2>Search Results for "{{ search_term }}"</h2>
+        
+        {% if recipes %}
+            <ul>
+                {% for recipe in recipes %}
+                <li>
+                    <a href="/recipy/{{ recipe[0] }}">{{ recipe[1] | safe }}</a><br />
+                    Cuisine: {{ recipe[3] }}<br />
+                    {{ recipe[4] }} comments on recipe. Newest: {{ recipe[5] }}
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No recipes found matching "{{ search_term }}".</p>
+        {% endif %}
+    {% endif %}
+    
+    <p><a href="/">Back to Home</a></p>
+{% endblock %} 

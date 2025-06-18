@@ -8,6 +8,7 @@
     <header>
         <nav>
             <a href="/">Home</a>
+            | <a href="/search">Search</a>
             {% if session.user_id %}
                 | <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
                 | <a href="/logout">Logout</a>

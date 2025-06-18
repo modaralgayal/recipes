@@ -278,5 +278,19 @@ def logout():
     return redirect("/")
 
 
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    if request.method == "GET":
+        return render_template("search.html", recipes=None, search_term="")
+    
+    if request.method == "POST":
+        search_term = request.form.get("search_term", "").strip()
+        if not search_term:
+            return render_template("search.html", recipes=None, search_term="")
+        
+        recipes = forum.search_recipes(search_term)
+        return render_template("search.html", recipes=recipes, search_term=search_term)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

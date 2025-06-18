@@ -8,6 +8,14 @@
       Welcome <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
     </h1>
 
+    <h2>Quick Search</h2>
+    <form action="/search" method="post">
+        <p>
+            <input type="text" name="search_term" placeholder="Search recipes..." maxlength="100" />
+            <input type="submit" value="Search" />
+        </p>
+    </form>
+
     <h2>New Recipy</h2>
 
     <form action="/new_recipy" method="post">
