@@ -28,12 +28,14 @@ app.secret_key = config.secret_key
 
 def require_login():
     if "user_id" not in session:
-        abort(403)
+        flash("ERROR: You must be logged in to perform this action")
+        return redirect("/")
 
 
 def check_csrf():
     if request.form["csrf_token"] != session["csrf_token"]:
-        abort(403)
+        flash("ERROR: Invalid request")
+        return redirect("/")
 
 
 @app.route("/")
@@ -69,19 +71,24 @@ def show_lines(content):
 
 @app.route("/edit/<int:comment_id>", methods=["GET", "POST"])
 def edit_comment(comment_id):
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
 
     comment = forum.get_comment(comment_id)
     print(comment["id"])
     print(comment["user_id"])
     print(session["user_id"])
     if comment["user_id"] != session["user_id"]:
-        abort(403)
+        flash("ERROR: You can only edit your own comments")
+        return redirect("/recipy/" + str(comment["recipy_id"]))
     if request.method == "GET":
         return render_template("edit.html", comment=comment)
 
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
         content = request.form["content"]
         rating = int(request.form.get("rating", 3))
         
@@ -95,7 +102,9 @@ def edit_comment(comment_id):
 
 @app.route("/remove_recipy/<int:recipy_id>", methods=["GET", "POST"])
 def remove_recipy(recipy_id):
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
 
     item = forum.get_recipy(recipy_id)
     type = "recipy"
@@ -104,31 +113,38 @@ def remove_recipy(recipy_id):
         return render_template("remove.html", item=item, type=type)
 
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
         if "cancel" in request.form:
             return redirect("/")
         if "continue" in request.form:
             success = forum.remove_recipy(recipy_id)
             if not success:
-                print("Cannot delete recipy — likely has comments")
-                return "Cannot delete recipy — likely has comments", 400
+                flash("Cannot delete recipy — likely has comments")
+                return redirect("/")
         return redirect("/")
 
 
 @app.route("/remove/<int:comment_id>", methods=["GET", "POST"])
 def remove_comment(comment_id):
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
 
     item = forum.get_comment(comment_id)
     if not item:
-        abort(404)
+        flash("ERROR: Comment not found")
+        return redirect("/")
     type = "comment"
 
     if request.method == "GET":
         return render_template("remove.html", item=item, type=type)
 
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
         if "continue" in request.form:
             forum.remove_comment(item["id"])
         return redirect("/recipy/" + str(item["recipy_id"]))
@@ -145,7 +161,8 @@ def login():
 
     # Check if user was found
     if not user:
-        return "ERROR: Invalid username or password", 401
+        flash("ERROR: Invalid username or password")
+        return redirect("/")
 
     user_id = user[0][0]
     username = user[0][1]
@@ -157,7 +174,8 @@ def login():
         session["csrf_token"] = secrets.token_hex(16)
         return redirect("/")
     else:
-        return "ERROR: Invalid username or password", 401
+        flash("ERROR: Invalid username or password")
+        return redirect("/")
 
 
 @app.route("/create_user", methods=["POST", "POST"])
@@ -167,7 +185,9 @@ def create_user():
         return render_template("register.html", filled="")
 
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
 
         username = request.form["username"]
         password1 = request.form["password1"]
@@ -182,7 +202,7 @@ def create_user():
             sql_command = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
             db.execute(sql_command, [username, password_hash])
         except sqlite3.IntegrityError:
-            flash("VIRHE: Passwords don't match")
+            flash("VIRHE: Username already exists")
             filled = {"username": username}
             return render_template("register.html", filled=filled)
 
@@ -191,8 +211,13 @@ def create_user():
 
 @app.route("/new_recipy", methods=["POST"])
 def new_recipy():
-    require_login()
-    check_csrf()
+    login_check = require_login()
+    if login_check:
+        return login_check
+    
+    csrf_check = check_csrf()
+    if csrf_check:
+        return csrf_check
 
     title = request.form["title"]
     recipy = request.form["recipy"]
@@ -207,7 +232,8 @@ def new_recipy():
 def show_recipy(recipy_id):
     recipy = forum.get_recipy(recipy_id)
     if not recipy:
-        abort(403)
+        flash("ERROR: Recipe not found")
+        return redirect("/")
     comments = forum.get_comments(recipy_id)
     average_rating = forum.get_average_rating(recipy_id)
     return render_template("recipy.html", recipy=recipy, comments=comments, average_rating=average_rating)
@@ -215,13 +241,17 @@ def show_recipy(recipy_id):
 
 @app.route("/add_image", methods=["GET", "POST"])
 def add_image():
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
 
     if request.method == "GET":
         return render_template("add_image.html")
 
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
 
         file = request.files["image"]
         if not file.filename.endswith(".jpg"):
@@ -240,10 +270,14 @@ def add_image():
 
 @app.route("/image/<int:user_id>")
 def show_image(user_id):
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
+    
     image = users.get_image(user_id)
     if not image:
-        abort(404)
+        flash("ERROR: Image not found")
+        return redirect("/")
 
     response = make_response(bytes(image))
     response.headers.set("Content-Type", "image/jpeg")
@@ -253,10 +287,14 @@ def show_image(user_id):
 
 @app.route("/user/<int:user_id>")
 def show_user(user_id):
-    require_login()
+    login_check = require_login()
+    if login_check:
+        return login_check
+    
     user = users.get_user(user_id)
     if not user:
-        abort(404)
+        flash("ERROR: User not found")
+        return redirect("/")
     comments = users.get_comments(user_id)
     return render_template("user.html", user=user, comments=comments)
 
@@ -271,8 +309,13 @@ def register():
 
 @app.route("/new_comment", methods=["POST"])
 def new_comment():
-    require_login()
-    check_csrf()
+    login_check = require_login()
+    if login_check:
+        return login_check
+    
+    csrf_check = check_csrf()
+    if csrf_check:
+        return csrf_check
 
     content = request.form["content"]
     rating = int(request.form.get("rating", 3))
@@ -286,7 +329,8 @@ def new_comment():
     try:
         forum.add_comment(content, user_id, recipy_id, rating)
     except sqlite3.IntegrityError:
-        abort(403)
+        flash("ERROR: Failed to add comment")
+        return redirect("/recipy/" + str(recipy_id))
 
     return redirect("/recipy/" + str(recipy_id))
 
@@ -305,7 +349,10 @@ def search():
         return render_template("search.html", recipes=None, search_term="")
     
     if request.method == "POST":
-        check_csrf()
+        csrf_check = check_csrf()
+        if csrf_check:
+            return csrf_check
+        
         search_term = request.form.get("search_term", "").strip()
         if not search_term:
             return render_template("search.html", recipes=None, search_term="")

@@ -3,6 +3,9 @@
 {% block title %}Homepage{% endblock %}
 
 {% block content %}
+
+    <head> <link rel="stylesheet" href="/static/main.css"></head>
+
     {% if session.user_id %}
     <h1>
       Welcome <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
