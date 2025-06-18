@@ -41,7 +41,17 @@
       {% for recipy in recipes %}
       <li>
         <a href="/recipy/{{ recipy.id }}"> {{ recipy.title | safe }} </a> <br />
-
+        {% if recipy.avg_rating and recipy.avg_rating > 0 %}
+          Rating: 
+          {% for i in range(5) %}
+              {% if i < recipy.avg_rating %}
+                  ★
+              {% else %}
+                  ☆
+              {% endif %}
+          {% endfor %}
+          ({{ "%.1f"|format(recipy.avg_rating) }}/5) <br />
+        {% endif %}
         {{ recipy.total }} comments on recipy. Newest {{ recipy.last }}
       </li>
       <a href="/remove_recipy/{{ recipy.id }}">Delete</a>

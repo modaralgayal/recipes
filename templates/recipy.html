@@ -5,12 +5,37 @@
 {% block content %}
     <h1>{{ recipy.title }}</h1>
     <p>{{ recipy.recipy }}</p>
+    <p>Cuisine:<i> {{ recipy.cuisine }}</i></p>
+    
+    {% if average_rating > 0 %}
+    <p><strong>Average Rating:</strong> 
+        {% for i in range(5) %}
+            {% if i < average_rating %}
+                ★
+            {% else %}
+                ☆
+            {% endif %}
+        {% endfor %}
+        ({{ "%.1f"|format(average_rating) }}/5)
+    </p>
+    {% endif %}
 
     <hr />
     {% for comment in comments %}
     <p id="{{ comment.id }}">
       <a href="/user/{{ comment.user_id }}"> {{ comment.username }} </a>
       ({{ comment.sent_at }})
+      {% if comment.rating %}
+        - Rating: 
+        {% for i in range(5) %}
+            {% if i < comment.rating %}
+                ★
+            {% else %}
+                ☆
+            {% endif %}
+        {% endfor %}
+        ({{ comment.rating }}/5)
+      {% endif %}
     </p>
     <p>{{ comment.content | show_lines }}</p>
     {% if comment.user_id == session.user_id %}
@@ -25,6 +50,16 @@
       <p>
         Comment:<br />
         <textarea name="content" rows="5" cols="40"></textarea>
+      </p>
+      <p>
+        Rating:<br />
+        <select name="rating">
+          <option value="5">★★★★★ (5 - Excellent)</option>
+          <option value="4">★★★★☆ (4 - Very Good)</option>
+          <option value="3" selected>★★★☆☆ (3 - Good)</option>
+          <option value="2">★★☆☆☆ (2 - Fair)</option>
+          <option value="1">★☆☆☆☆ (1 - Poor)</option>
+        </select>
       </p>
       <input type="hidden" name="recipy_id" value="{{ recipy.id }}" />
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />

@@ -18,5 +18,6 @@ CREATE TABLE comments (
     content TEXT,
     sent_at TEXT,
     user_id INTEGER REFERENCES users,
-    recipy_id INTEGER REFERENCES recipes
+    recipy_id INTEGER REFERENCES recipes,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5)
 );

@@ -79,7 +79,13 @@ def edit_comment(comment_id):
     if request.method == "POST":
         check_csrf()
         content = request.form["content"]
-        forum.update_comment(comment["id"], content)
+        rating = int(request.form.get("rating", 3))
+        
+        # Validate rating
+        if rating < 1 or rating > 5:
+            rating = 3
+            
+        forum.update_comment(comment["id"], content, rating)
         return redirect("/recipy/" + str(comment["recipy_id"]))
 
 
@@ -197,7 +203,8 @@ def show_recipy(recipy_id):
     if not recipy:
         abort(403)
     comments = forum.get_comments(recipy_id)
-    return render_template("recipy.html", recipy=recipy, comments=comments)
+    average_rating = forum.get_average_rating(recipy_id)
+    return render_template("recipy.html", recipy=recipy, comments=comments, average_rating=average_rating)
 
 
 @app.route("/add_image", methods=["GET", "POST"])
@@ -259,11 +266,16 @@ def new_comment():
     check_csrf()
 
     content = request.form["content"]
+    rating = int(request.form.get("rating", 3))
     user_id = session["user_id"]
     recipy_id = request.form["recipy_id"]
 
+    # Validate rating
+    if rating < 1 or rating > 5:
+        rating = 3
+
     try:
-        forum.add_comment(content, user_id, recipy_id)
+        forum.add_comment(content, user_id, recipy_id, rating)
     except sqlite3.IntegrityError:
         abort(403)
 

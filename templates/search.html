@@ -22,6 +22,17 @@
                 <li>
                     <a href="/recipy/{{ recipe[0] }}">{{ recipe[1] | safe }}</a><br />
                     Cuisine: {{ recipe[3] }}<br />
+                    {% if recipe[6] and recipe[6] > 0 %}
+                      Rating: 
+                      {% for i in range(5) %}
+                          {% if i < recipe[6] %}
+                              ★
+                          {% else %}
+                              ☆
+                          {% endif %}
+                      {% endfor %}
+                      ({{ "%.1f"|format(recipe[6]) }}/5)<br />
+                    {% endif %}
                     {{ recipe[4] }} comments on recipe. Newest: {{ recipe[5] }}
                 </li>
                 {% endfor %}
