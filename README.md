@@ -31,7 +31,6 @@ A simple web application for sharing and discovering recipes, built with Flask a
    ```
 
 ## Test Data
-- Test data can be produced by running ``` python seed.py ```.
 - Speed of execution is printed in the terminal provided by the @app.before_request and @app.after_request functionality.
 
 
