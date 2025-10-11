@@ -1,10 +1,35 @@
 import sqlite3
-
 import db
 
 
+# -------------------------------
+# Simple input validation helpers
+# -------------------------------
+def _validate_text(value, field_name, max_length, allow_empty=False):
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string")
+    value = value.strip()
+    if not value and not allow_empty:
+        raise ValueError(f"{field_name} cannot be empty")
+    if len(value) > max_length:
+        raise ValueError(f"{field_name} exceeds {max_length} characters")
+    return value
+
+
+def _validate_rating(rating):
+    try:
+        rating = int(rating)
+    except (ValueError, TypeError):
+        rating = 3
+    return min(max(rating, 1), 5)
+
+
+# -------------------------------
+# Forum functions
+# -------------------------------
 def get_recipes(page, page_size):
-    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, r.user_id, COUNT(c.id) total, MAX(c.sent_at) last, AVG(c.rating) avg_rating
+    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, r.user_id, COUNT(c.id) total, 
+                    MAX(c.sent_at) last, AVG(c.rating) avg_rating
              FROM recipes r
              LEFT JOIN comments c ON r.id = c.recipy_id
              GROUP BY r.id
@@ -13,22 +38,24 @@ def get_recipes(page, page_size):
     limit = page_size
     offset = page_size * (page - 1)
     result = db.query(sql, [limit, offset])
-    print(result)
     return result
 
 
 def recipy_count():
     sql_command = "SELECT COUNT(*) FROM recipes"
     count = db.query(sql_command)
-    print(count[0][0])
-    return count[0][0]  # assuming count is a list of one tuple
+    return count[0][0] if count else 0
 
 
 def add_recipy(title, recipy, cuisine, user_id):
+    """Add a new recipe with basic validation"""
+    title = _validate_text(title, "Title", 100)
+    recipy = _validate_text(recipy, "Recipe", 500)
+    cuisine = _validate_text(cuisine, "Cuisine", 50)
+
     sql = "INSERT INTO recipes (title, recipy, cuisine, user_id) VALUES (?, ?, ?, ?)"
     db.execute(sql, [title, recipy, cuisine, user_id])
-    recipy_id = db.last_insert_id()
-    return recipy_id
+    return db.last_insert_id()
 
 
 def get_recipy(recipy_id):
@@ -38,6 +65,10 @@ def get_recipy(recipy_id):
 
 
 def add_comment(content, user_id, recipy_id, rating=3):
+    """Add a new comment with content and rating validation"""
+    content = _validate_text(content, "Comment", 2000)
+    rating = _validate_rating(rating)
+
     sql = """INSERT INTO comments (content, sent_at, user_id, recipy_id, rating)
              VALUES (?, datetime('now'), ?, ?, ?)"""
     db.execute(sql, [content, user_id, recipy_id, rating])
@@ -45,10 +76,10 @@ def add_comment(content, user_id, recipy_id, rating=3):
 
 def get_comments(recipy_id):
     sql = """SELECT c.id, c.content, c.sent_at, c.user_id, u.username, c.rating
-    FROM comments c, users u
-    WHERE c.user_id == u.id AND c.recipy_id = ?
-    ORDER BY c.id"""
-
+             FROM comments c
+             JOIN users u ON c.user_id = u.id
+             WHERE c.recipy_id = ?
+             ORDER BY c.id"""
     return db.query(sql, [recipy_id])
 
 
@@ -59,7 +90,10 @@ def get_comment(comment_id):
 
 
 def update_comment(comment_id, content, rating=None):
+    """Update a comment's content and rating safely"""
+    content = _validate_text(content, "Comment", 2000)
     if rating is not None:
+        rating = _validate_rating(rating)
         sql = "UPDATE comments SET content = ?, rating = ? WHERE id = ?"
         db.execute(sql, [content, rating, comment_id])
     else:
@@ -74,7 +108,6 @@ def remove_comment(comment_id):
 
 def remove_recipy(recipy_id):
     try:
-        print("Deleting recipy:", recipy_id)
         sql = "DELETE FROM recipes WHERE id = ?"
         db.execute(sql, [int(recipy_id)])
         return True
@@ -84,13 +117,16 @@ def remove_recipy(recipy_id):
 
 
 def update_comments(comment_id, content):
+    content = _validate_text(content, "Comment", 2000)
     sql = "UPDATE comments SET content = ? WHERE id = ?"
     db.execute(sql, [content, comment_id])
 
 
 def search_recipes(search_term):
-    """Search recipes by title, content, or cuisine"""
-    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, COUNT(c.id) total, MAX(c.sent_at) last, AVG(c.rating) avg_rating
+    """Search recipes by title, content, or cuisine (safe pattern)"""
+    search_term = _validate_text(search_term, "Search term", 100)
+    sql = """SELECT r.id, r.title, r.recipy, r.cuisine, COUNT(c.id) total, 
+                    MAX(c.sent_at) last, AVG(c.rating) avg_rating
              FROM recipes r
              LEFT JOIN comments c ON r.id = c.recipy_id
              WHERE r.title LIKE ? OR r.recipy LIKE ? OR r.cuisine LIKE ?
